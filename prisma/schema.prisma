@@ -1,0 +1,111 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  email         String     @unique
+  name          String?
+  password      String
+  image         String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  works         Work[]
+  templates     Template[]
+  comments      Comment[]
+  likes         Like[]
+}
+
+model Work {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  slides      Json
+  authorId    String     @db.ObjectId
+  author      User       @relation(fields: [authorId], references: [id])
+  templateId  String?    @db.ObjectId
+  template    Template?  @relation("TemplateToWork", fields: [templateId], references: [id])
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  comments    Comment[]
+  likes       Like[]
+  isPublic    Boolean    @default(true)
+  language    String     @default("ko")
+  translations Json?
+  versions    WorkVersion[]
+
+  @@index([authorId])
+  @@index([templateId])
+  @@index([language])
+}
+
+model Template {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  thumbnail   String?
+  category    String
+  tags        String[]
+  slides      Json
+  authorId    String     @db.ObjectId
+  author      User       @relation(fields: [authorId], references: [id])
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  usageCount  Int        @default(0)
+  isPublic    Boolean    @default(true)
+  language    String     @default("ko")
+  translations Json?
+  works       Work[]     @relation("TemplateToWork")
+
+  @@index([authorId])
+  @@index([category])
+  @@index([tags])
+  @@index([language])
+}
+
+model Comment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  content   String
+  authorId  String   @db.ObjectId
+  author    User     @relation(fields: [authorId], references: [id])
+  workId    String   @db.ObjectId
+  work      Work     @relation(fields: [workId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([authorId])
+  @@index([workId])
+}
+
+model Like {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  authorId  String   @db.ObjectId
+  author    User     @relation(fields: [authorId], references: [id])
+  workId    String   @db.ObjectId
+  work      Work     @relation(fields: [workId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([authorId, workId])
+  @@index([authorId])
+  @@index([workId])
+}
+
+model WorkVersion {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  workId    String   @db.ObjectId
+  work      Work     @relation(fields: [workId], references: [id])
+  data      Json
+  version   Int
+  createdAt DateTime @default(now())
+
+  @@index([workId])
+  @@index([version])
+} 
