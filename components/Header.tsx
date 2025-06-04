@@ -17,6 +17,9 @@ export default function Header() {
             <Link href="/templates" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
               템플릿
             </Link>
+            <Link href="/framer" className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+              프레이머
+            </Link>
           </div>
         </div>
       </nav>
